@@ -1,0 +1,15 @@
+<section class="card error-card">
+  <h1><%= statusCode %></h1>
+  <p><%= message %></p>
+
+  <% if (typeof stack !== 'undefined' && stack) { %>
+    <details>
+      <summary>Stack trace (dev only)</summary>
+      <pre><%= stack %></pre>
+    </details>
+  <% } %>
+
+  <p class="mt-3">
+    <a href="/" class="btn btn-primary">Go Home</a>
+  </p>
+</section>
