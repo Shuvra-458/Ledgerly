@@ -1,0 +1,47 @@
+services:
+  mongo:
+    image: mongo:7
+    container_name: ft_mongo
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
+      MONGO_INITDB_DATABASE: ${MONGO_DB}
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - ft_net
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    # No ports exposed to host in prod (only accessible inside network)
+    # Uncomment only if you need local access:
+    # ports:
+    #   - "27017:27017"
+
+  app:
+    build:
+      context: .
+      target: production
+    container_name: ft_app
+    restart: unless-stopped
+    env_file:
+      - .env.docker
+    depends_on:
+      mongo:
+        condition: service_healthy
+    ports:
+      - "3000:3000"
+    networks:
+      - ft_net
+
+volumes:
+  mongo_data:
+    driver: local
+
+networks:
+  ft_net:
+    driver: bridge
