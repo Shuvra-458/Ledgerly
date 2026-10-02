@@ -1,0 +1,93 @@
+<section class="page-header">
+  <h1>Your Profile</h1>
+  <span class="muted small">
+    Member since
+    <%= new Date(user.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) %>
+  </span>
+</section>
+
+<% if (success) { %>
+  <div class="alert alert-success"><%= success %></div>
+<% } %>
+
+<% if (errors && errors.length) { %>
+  <div class="alert alert-error">
+    <ul>
+      <% errors.forEach(e => { %><li><%= e %></li><% }); %>
+    </ul>
+  </div>
+<% } %>
+
+<!-- ============================================================
+     Account details
+     ============================================================ -->
+<section class="card profile-card">
+  <h2>Account details</h2>
+  <p class="muted small">Update your name, email, or preferred currency.</p>
+
+  <form action="/profile" method="POST" novalidate>
+    <div class="row">
+      <label>
+        Full name
+        <input type="text" name="name" value="<%= form.name %>" maxlength="50" required />
+      </label>
+
+      <label>
+        Email
+        <input type="email" name="email" value="<%= form.email %>" required />
+      </label>
+    </div>
+
+    <label>
+      Preferred currency
+      <select name="currency" required>
+        <% currencies.forEach(c => { %>
+          <option value="<%= c %>" <%= form.currency === c ? 'selected' : '' %>>
+            <%= c %>
+          </option>
+        <% }); %>
+      </select>
+      <span class="muted small">
+        All amounts across the app will be displayed in this currency.
+      </span>
+    </label>
+
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary">Save changes</button>
+      <a href="/dashboard" class="btn btn-ghost">Cancel</a>
+    </div>
+  </form>
+</section>
+
+<!-- ============================================================
+     Password change
+     ============================================================ -->
+<section class="card profile-card">
+  <h2>Change password</h2>
+  <p class="muted small">
+    Use at least 6 characters. You will remain logged in after changing your password.
+  </p>
+
+  <form action="/profile/password" method="POST" novalidate>
+    <label>
+      Current password
+      <input type="password" name="currentPassword" autocomplete="current-password" required />
+    </label>
+
+    <div class="row">
+      <label>
+        New password
+        <input type="password" name="newPassword" minlength="6" autocomplete="new-password" required />
+      </label>
+
+      <label>
+        Confirm new password
+        <input type="password" name="confirmPassword" minlength="6" autocomplete="new-password" required />
+      </label>
+    </div>
+
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary">Change password</button>
+    </div>
+  </form>
+</section>
