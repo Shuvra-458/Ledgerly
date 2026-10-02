@@ -1,0 +1,21 @@
+<section class="page-header">
+  <h1>Financial Reviews</h1>
+</section>
+
+<% if (!reviews.length) { %>
+  <div class="card"><p class="muted">No reviews yet. Generate one from the dashboard.</p></div>
+<% } else { %>
+  <div class="review-list">
+    <% reviews.forEach(r => { %>
+      <a href="/reviews/<%= r._id %>" class="card review-list-item">
+        <div>
+          <strong><%= r.content.headline %></strong>
+          <div class="muted small">
+            <%= new Date(r.period.year, r.period.month - 1).toLocaleString('en-US', { month: 'long', year: 'numeric' }) %>
+          </div>
+        </div>
+        <span class="badge sentiment-<%= r.content.sentiment %>"><%= r.content.sentiment %></span>
+      </a>
+    <% }); %>
+  </div>
+<% } %>
