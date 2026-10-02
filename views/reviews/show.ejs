@@ -1,0 +1,21 @@
+<article class="card">
+  <h1><%= review.content.headline %></h1>
+  <p class="muted">
+    <%= new Date(review.period.year, review.period.month - 1).toLocaleString('en-US', { month: 'long', year: 'numeric' }) %>
+    · source: <%= review.source %>
+  </p>
+  <p><%= review.content.summary %></p>
+
+  <h3>Expenses</h3>
+  <p><%= review.content.expenseReview %></p>
+
+  <h3>Income</h3>
+  <p><%= review.content.incomeReview %></p>
+
+  <h3>Advice</h3>
+  <ul>
+    <% review.content.advice.forEach(a => { %><li><%= a %></li><% }); %>
+  </ul>
+
+  <p><a href="/reviews" class="btn">Back to Reviews</a></p>
+</article>
