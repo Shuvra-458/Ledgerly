@@ -1,0 +1,86 @@
+<%
+  const sentiment = currentReview?.content?.sentiment;
+  const sentimentClass =
+    sentiment === 'positive'  ? 'sentiment-positive'  :
+    sentiment === 'concerning' ? 'sentiment-concerning' :
+                                 'sentiment-neutral';
+%>
+
+<section class="card review-card">
+  <div class="review-header">
+    <h2>AI Financial Review</h2>
+    <% if (currentReview) { %>
+      <span class="badge <%= sentimentClass %>"><%= sentiment %></span>
+    <% } %>
+  </div>
+
+  <% if (!currentReview) { %>
+    <p class="muted">
+      No review for this month yet.
+      <% if (llmEnabled) { %>
+        Generate one below — takes a few seconds.
+      <% } else { %>
+        (LLM not configured — a templated review will be generated instead.)
+      <% } %>
+    </p>
+    <form action="/reviews/generate" method="POST" data-loading>
+      <button type="submit" class="btn btn-primary">Generate Review</button>
+    </form>
+  <% } else { %>
+
+    <h3 class="review-headline"><%= currentReview.content.headline %></h3>
+    <p class="review-summary"><%= currentReview.content.summary %></p>
+
+    <div class="review-block">
+      <h4>Expenses</h4>
+      <p><%= currentReview.content.expenseReview %></p>
+    </div>
+
+    <div class="review-block">
+      <h4>Income</h4>
+      <p><%= currentReview.content.incomeReview %></p>
+    </div>
+
+    <% if (currentReview.content.advice?.length) { %>
+      <div class="review-block">
+        <h4>Advice</h4>
+        <ul class="advice-list">
+          <% currentReview.content.advice.forEach(a => { %>
+            <li><%= a %></li>
+          <% }); %>
+        </ul>
+      </div>
+    <% } %>
+
+    <% if (currentReview.retrievedTips?.length) { %>
+      <details class="grounding">
+        <summary>
+          Grounded in <%= currentReview.retrievedTips.length %> budgeting principle<%=
+            currentReview.retrievedTips.length === 1 ? '' : 's'
+          %>
+        </summary>
+        <ul class="tip-list">
+          <% currentReview.retrievedTips.forEach(t => { %>
+            <li>
+              <span class="tip-score"><%= (t.score * 100).toFixed(0) %>%</span>
+              <%= t.text %>
+            </li>
+          <% }); %>
+        </ul>
+      </details>
+    <% } %>
+
+    <div class="review-footer">
+      <span class="muted">
+        Source: <%= currentReview.source %>
+        <% if (currentReview.source === 'llm') { %>
+          · <%= currentReview.model %>
+        <% } %>
+      </span>
+      <form action="/reviews/generate" method="POST" data-loading style="display:inline">
+        <button type="submit" class="btn btn-ghost btn-small">Regenerate</button>
+      </form>
+    </div>
+
+  <% } %>
+</section>
