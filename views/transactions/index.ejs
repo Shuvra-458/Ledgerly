@@ -1,0 +1,99 @@
+<section class="page-header">
+  <h1>Transactions</h1>
+  <a href="/transactions/new" class="btn btn-primary">+ Add Transaction</a>
+</section>
+
+<section class="summary-cards">
+  <div class="card summary">
+    <span class="label">Income</span>
+    <span class="value income">+<%= currencySymbol %><%= totals.income.toFixed(2) %></span>
+  </div>
+  <div class="card summary">
+    <span class="label">Expense</span>
+    <span class="value expense">-<%= currencySymbol %><%= totals.expense.toFixed(2) %></span>
+  </div>
+  <div class="card summary">
+    <span class="label">Balance</span>
+    <span class="value <%= totals.balance >= 0 ? 'income' : 'expense' %>">
+      <%= totals.balance >= 0 ? '+' : '-' %><%= currencySymbol %><%= Math.abs(totals.balance).toFixed(2) %>
+    </span>
+  </div>
+</section>
+
+<form method="GET" action="/transactions" class="filters card">
+  <div class="filter-row">
+    <label>
+      Category
+      <select name="category">
+        <option value="">All</option>
+        <% categories.forEach(c => { %>
+          <option value="<%= c %>" <%= filters.category === c ? 'selected' : '' %>><%= c %></option>
+        <% }); %>
+      </select>
+    </label>
+
+    <label>
+      Type
+      <select name="type">
+        <option value="">All</option>
+        <option value="income"  <%= filters.type === 'income'  ? 'selected' : '' %>>Income</option>
+        <option value="expense" <%= filters.type === 'expense' ? 'selected' : '' %>>Expense</option>
+      </select>
+    </label>
+
+    <label>
+      From
+      <input type="date" name="from" value="<%= filters.from || '' %>" />
+    </label>
+
+    <label>
+      To
+      <input type="date" name="to" value="<%= filters.to || '' %>" />
+    </label>
+
+    <button type="submit" class="btn">Filter</button>
+    <a href="/transactions" class="btn btn-ghost">Clear</a>
+  </div>
+</form>
+
+<% if (!transactions.length) { %>
+  <div class="card empty">
+    <p>No transactions yet. <a href="/transactions/new">Add your first one</a>.</p>
+  </div>
+<% } else { %>
+  <table class="tx-table card">
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>Title</th>
+        <th>Category</th>
+        <th class="right">Amount</th>
+        <th class="right">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% transactions.forEach(t => { %>
+        <tr>
+          <td><%= new Date(t.date).toISOString().slice(0, 10) %></td>
+          <td>
+            <%= t.type === 'income' ? '💰' : '💸' %>
+            <%= t.title %>
+            <% if (t.notes) { %>
+              <span class="muted" title="<%= t.notes %>">📝</span>
+            <% } %>
+          </td>
+          <td><span class="badge"><%= t.category %></span></td>
+          <td class="right <%= t.type === 'income' ? 'income' : 'expense' %>">
+            <%= t.type === 'income' ? '+' : '-' %><%= currencySymbol %><%= Math.abs(t.amount).toFixed(2) %>
+          </td>
+          <td class="right actions">
+            <a href="/transactions/<%= t._id %>/edit" class="btn btn-small">Edit</a>
+            <form action="/transactions/<%= t._id %>/delete" method="POST" style="display:inline">
+              <button type="submit" class="btn btn-small btn-danger">Delete</button>
+            </form>
+          </td>
+        </tr>
+      <% }); %>
+    </tbody>
+  </table>
+<% } %>
