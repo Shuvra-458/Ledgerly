@@ -1,0 +1,60 @@
+<section class="card form-card">
+  <h1><%= mode === 'create' ? 'New Transaction' : 'Edit Transaction' %></h1>
+
+  <% if (errors && errors.length) { %>
+    <ul class="errors">
+      <% errors.forEach(err => { %><li><%= err %></li><% }); %>
+    </ul>
+  <% } %>
+
+  <form action="<%= mode === 'create' ? '/transactions' : '/transactions/' + transaction._id %>"
+        method="POST" novalidate>
+
+    <label>
+      Title
+      <input type="text" name="title" value="<%= transaction.title || '' %>" maxlength="100" required />
+    </label>
+
+    <div class="row">
+      <label>
+        Type
+        <select name="type">
+          <option value="expense" <%= transaction.type === 'expense' ? 'selected' : '' %>>Expense 💸</option>
+          <option value="income"  <%= transaction.type === 'income'  ? 'selected' : '' %>>Income 💰</option>
+        </select>
+      </label>
+
+      <label>
+        Amount
+        <input type="number" name="amount" step="0.01" min="0.01"
+               value="<%= transaction.amount || '' %>" required />
+      </label>
+
+      <label>
+        Category
+        <select name="category">
+          <% categories.forEach(c => { %>
+            <option value="<%= c %>" <%= transaction.category === c ? 'selected' : '' %>><%= c %></option>
+          <% }); %>
+        </select>
+      </label>
+    </div>
+
+    <label>
+      Date
+      <input type="date" name="date" value="<%= transaction.date %>" required />
+    </label>
+
+    <label>
+      Notes <span class="muted">(optional)</span>
+      <textarea name="notes" rows="3" maxlength="500"><%= transaction.notes || '' %></textarea>
+    </label>
+
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary">
+        <%= mode === 'create' ? 'Add Transaction' : 'Save Changes' %>
+      </button>
+      <a href="/transactions" class="btn btn-ghost">Cancel</a>
+    </div>
+  </form>
+</section>
