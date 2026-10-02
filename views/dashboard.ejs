@@ -1,0 +1,177 @@
+<section class="page-header">
+  <h1>Welcome, <%= user.name %> 👋</h1>
+  <a href="/transactions/new" class="btn btn-primary">+ Add Transaction</a>
+</section>
+
+<section class="summary-cards">
+  <div class="card summary summary-balance">
+    <span class="label">Balance</span>
+    <span class="value <%= summary.balance >= 0 ? 'income' : 'expense' %>">
+      <%= summary.balance >= 0 ? '+' : '-' %><%= currencySymbol %><%= Math.abs(summary.balance).toFixed(2) %>
+    </span>
+    <span class="muted small">All-time</span>
+  </div>
+
+  <div class="card summary summary-income">
+    <span class="label">This Month · Income</span>
+    <span class="value income">+<%= currencySymbol %><%= summary.monthIncome.toFixed(2) %></span>
+  </div>
+
+  <div class="card summary summary-expense">
+    <span class="label">This Month · Expense</span>
+    <span class="value expense">-<%= currencySymbol %><%= summary.monthExpense.toFixed(2) %></span>
+  </div>
+
+  <div class="card summary summary-net">
+    <span class="label">This Month · Net</span>
+    <%
+      const net = summary.monthIncome - summary.monthExpense;
+    %>
+    <span class="value <%= net >= 0 ? 'income' : 'expense' %>">
+      <%= net >= 0 ? '+' : '-' %><%= currencySymbol %><%= Math.abs(net).toFixed(2) %>
+    </span>
+  </div>
+</section>
+
+<%- include('partials/review-panel') %>
+
+<!-- ================= Charts ================= -->
+<section class="chart-grid">
+  <div class="card chart-card">
+    <h2>Last 6 Months</h2>
+    <canvas id="monthlyChart"></canvas>
+  </div>
+
+  <div class="card chart-card">
+    <h2>This Month · Expenses by Category</h2>
+    <% if (categoryData.values.length === 0) { %>
+      <p class="muted">No expenses this month yet.</p>
+    <% } else { %>
+      <canvas id="categoryChart"></canvas>
+    <% } %>
+  </div>
+</section>
+
+<!-- ================= Recent transactions ================= -->
+<section class="card">
+  <div class="page-header" style="margin-bottom: 1rem;">
+    <h2 style="margin: 0;">Recent Transactions</h2>
+    <a href="/transactions" class="btn btn-ghost btn-small">View All</a>
+  </div>
+
+  <% if (!recent.length) { %>
+    <p class="muted">No transactions yet. <a href="/transactions/new">Add your first one</a>.</p>
+  <% } else { %>
+    <table class="tx-table">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Title</th>
+          <th>Category</th>
+          <th class="right">Amount</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% recent.forEach(t => { %>
+          <tr>
+            <td><%= new Date(t.date).toISOString().slice(0, 10) %></td>
+            <td><%= t.type === 'income' ? '💰' : '💸' %> <%= t.title %></td>
+            <td><span class="badge"><%= t.category %></span></td>
+            <td class="right <%= t.type === 'income' ? 'income' : 'expense' %>">
+              <%= t.type === 'income' ? '+' : '-' %><%= currencySymbol %><%= Math.abs(t.amount).toFixed(2) %>
+            </td>
+          </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  <% } %>
+</section>
+
+<!-- ================= Chart.js wiring ================= -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<script>
+  // Data from the server — safely serialized to JSON
+  const monthlyData    = <%- JSON.stringify(monthlyData) %>;
+  const categoryData   = <%- JSON.stringify(categoryData) %>;
+  const currencySymbol = <%- JSON.stringify(currencySymbol || '$') %>;
+
+  // ---------- Monthly bar chart ----------
+  const mCtx = document.getElementById('monthlyChart');
+  if (mCtx) {
+    new Chart(mCtx, {
+      type: 'bar',
+      data: {
+        labels: monthlyData.map(m => m.label),
+        datasets: [
+          {
+            label: 'Income',
+            data: monthlyData.map(m => m.income),
+            backgroundColor: 'rgba(22, 163, 74, 0.7)',
+            borderColor: 'rgba(22, 163, 74, 1)',
+            borderWidth: 1,
+          },
+          {
+            label: 'Expense',
+            data: monthlyData.map(m => m.expense),
+            backgroundColor: 'rgba(220, 38, 38, 0.7)',
+            borderColor: 'rgba(220, 38, 38, 1)',
+            borderWidth: 1,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { position: 'bottom' },
+          tooltip: {
+            callbacks: {
+              label: (ctx) => `${ctx.dataset.label}: ${currencySymbol}${ctx.parsed.y.toFixed(2)}`,
+            },
+          },
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: { callback: (v) => currencySymbol + v },
+          },
+        },
+      },
+    });
+  }
+
+  // ---------- Category doughnut chart ----------
+  const cCtx = document.getElementById('categoryChart');
+  if (cCtx && categoryData.values.length > 0) {
+    const palette = [
+      '#ef4444', '#f59e0b', '#10b981', '#3b82f6',
+      '#8b5cf6', '#ec4899', '#14b8a6', '#f97316', '#6366f1',
+    ];
+    new Chart(cCtx, {
+      type: 'doughnut',
+      data: {
+        labels: categoryData.labels,
+        datasets: [
+          {
+            data: categoryData.values,
+            backgroundColor: palette.slice(0, categoryData.values.length),
+            borderWidth: 2,
+            borderColor: '#fff',
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { position: 'bottom' },
+          tooltip: {
+            callbacks: {
+              label: (ctx) => `${ctx.label}: ${currencySymbol}${ctx.parsed.toFixed(2)}`,
+            },
+          },
+        },
+      },
+    });
+  }
+</script>
