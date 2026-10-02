@@ -1,4 +1,4 @@
-# 💰 Fathom
+# 💰 Ledgerly
 
 > A full-stack personal finance platform with an AI-powered review engine, transaction analytics, and a RAG-grounded knowledge pipeline.
 
