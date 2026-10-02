@@ -1,0 +1,33 @@
+<section class="card auth-card">
+    <h1>Create Account</h1>
+    
+    <% if (errors && errors.length) { %>
+        <ul class="errors">
+            <% errors.forEach(err => {%> 
+                <li><%= err %></li>
+            <% }); %>
+        </ul>
+    <% } %>
+
+    <form action="/register" method="POST" novalidate>
+        <label>
+            Name
+            <input type="text" name="name" value="<%= values.name || '' %>" required />
+        </label>
+        <label>
+            Email
+            <input type="email" name="email" value="<%= values.email || '' %>" required />
+        </label>
+        <label>
+            Password
+            <input type="password" name="password" minlength="6" required />
+        </label>
+        <label>
+            Confirm Password
+            <input type="password" name="confirmPassword" minlength="6" required />
+        </label>
+        <button type="submit">Register</button>
+    </form>
+
+    <p class="muted">Already have an account? <a href="/login">Login</a></p>
+</section>
